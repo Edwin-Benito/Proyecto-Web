@@ -2,6 +2,18 @@
 
 Un proyecto fullstack desarrollado con **Next.js** (frontend) y **Express.js** (backend) para la materia de Desarrollo Web.
 
+## 📑 Tabla de Contenidos
+
+- [🚀 Tecnologías Utilizadas](#-tecnologías-utilizadas)
+- [📁 Estructura del Proyecto](#-estructura-del-proyecto)
+- [🛠️ Instalación y Configuración](#️-instalación-y-configuración)
+- [🚀 Ejecución](#-ejecución)
+- [📡 APIs Disponibles](#-apis-disponibles)
+- [✨ Características](#-características)
+- [👥 Equipo de Desarrollo](#-equipo-de-desarrollo)
+- [🤝 Trabajo en Equipo](#-trabajo-en-equipo-5-personas)
+- [📝 Notas de Desarrollo](#-notas-de-desarrollo)
+
 ## 🚀 Tecnologías Utilizadas
 
 ### Frontend
@@ -97,15 +109,19 @@ Proyecto Web/
 - ✅ **APIs REST** funcionales
 - ✅ **Interfaz interactiva** para probar la conectividad
 
-## 👨‍💻 Desarrollador
+## � Equipo de Desarrollo
 
-**Edwin Benito** - Estudiante de Desarrollo Web
+- **Edwin Benito** - Team Lead & Backend Developer
+- **Francisco Gress** - Frontend Lead Developer  
+- **Jose Luis** - Frontend Developer
+- **Erick Rivas** - Backend Developer
+- **Aldo Pacheco** - UI/UX Developer
 
-## 👥 Trabajo en Equipo (5 Personas)
+## 🤝 Trabajo en Equipo (5 Personas)
 
 Este proyecto está diseñado para trabajar colaborativamente con **5 desarrolladores**. Aquí tienes todos los comandos y flujo de trabajo necesarios:
 
-### 🚀 Configuración Inicial para Nuevos Colaboradores
+### ⚙️ Configuración Inicial para Nuevos Colaboradores
 
 #### 1. **Clonar el Repositorio**
 ```bash
@@ -142,12 +158,12 @@ cd ../..
 - `feature/ui-[nombre]` - Diseño y componentes UI
 - `hotfix/[nombre]` - Correcciones urgentes
 
-#### **División del Equipo:**
-1. **Frontend Lead** - Componentes principales y arquitectura
-2. **Frontend Developer** - Páginas y componentes específicos
-3. **Backend Lead** - APIs y base de datos
-4. **Backend Developer** - Servicios y middleware
-5. **UI/UX Developer** - Diseño, estilos y experiencia de usuario
+#### **División del Equipo por Roles:**
+1. **Edwin Benito (Team Lead)** - Arquitectura general y APIs principales
+2. **Francisco Gress (Frontend Lead)** - Componentes principales y arquitectura frontend
+3. **Jose Luis (Frontend Developer)** - Páginas y componentes específicos
+4. **Erick Rivas (Backend Developer)** - Servicios, middleware y autenticación
+5. **Aldo Pacheco (UI/UX Developer)** - Diseño, estilos y experiencia de usuario
 
 ### 📋 Comandos Esenciales para Colaboración
 
@@ -262,21 +278,21 @@ git fetch
 git checkout -b nombre-rama origin/nombre-rama
 ```
 
-### 🚀 Comandos de Desarrollo por Área
+### �️ Comandos de Desarrollo por Área
 
-#### **Frontend Team**
+#### **Frontend Team (Francisco & Jose Luis)**
 ```bash
 # Iniciar desarrollo frontend
 cd frontend/citas-frg
 pnpm dev  # Puerto 3000
 
 # Comandos útiles
-pnpm build    # Construir para producción
-pnpm lint     # Revisar código
+pnpm build       # Construir para producción
+pnpm lint        # Revisar código
 pnpm type-check  # Verificar TypeScript
 ```
 
-#### **Backend Team**
+#### **Backend Team (Edwin & Erick)**
 ```bash
 # Iniciar desarrollo backend
 cd backend
@@ -285,6 +301,17 @@ pnpm dev  # Puerto 3001
 # Comandos útiles
 pnpm start    # Modo producción
 node index.js # Ejecutar directo
+```
+
+#### **UI/UX Team (Aldo)**
+```bash
+# Trabajar en estilos y componentes
+cd frontend/citas-frg
+pnpm dev  # Puerto 3000
+
+# Comandos útiles para diseño
+pnpm build    # Ver build de producción
+# Revisar responsive design en diferentes viewports
 ```
 
 ### 📝 Convenciones del Equipo
@@ -340,11 +367,27 @@ git merge upstream/main
 
 ## 📝 Notas de Desarrollo
 
-Este proyecto fue creado como parte del aprendizaje de desarrollo fullstack, conectando un frontend moderno en Next.js con un backend en Express.js.
+Este proyecto fue creado como parte del aprendizaje de desarrollo fullstack en la **materia de Desarrollo Web**, conectando un frontend moderno en Next.js con un backend en Express.js.
 
-### Próximas funcionalidades:
-- Sistema de autenticación
-- Base de datos
-- CRUD completo para gestión de citas
-- Validaciones de formularios
-- Testing unitario
+### 🎯 Objetivos del Proyecto:
+- Aprender desarrollo fullstack moderno
+- Practicar trabajo colaborativo con Git
+- Implementar comunicación frontend-backend
+- Aplicar buenas prácticas de desarrollo
+
+### 🚀 Próximas Funcionalidades:
+- [ ] Sistema de autenticación y autorización
+- [ ] Integración con base de datos (MongoDB/PostgreSQL)
+- [ ] CRUD completo para gestión de citas médicas
+- [ ] Validaciones de formularios frontend y backend
+- [ ] Testing unitario e integración
+- [ ] Deployment en la nube (Vercel/Heroku)
+- [ ] Notificaciones en tiempo real
+- [ ] Dashboard administrativo
+
+### 📚 Tecnologías por Aprender:
+- **Base de datos**: Prisma ORM + PostgreSQL
+- **Autenticación**: NextAuth.js o JWT
+- **Testing**: Jest + React Testing Library
+- **Deploy**: Vercel (frontend) + Railway (backend)
+- **Monitoring**: Sentry para error tracking
