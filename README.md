@@ -49,28 +49,29 @@ Proyecto Web/
 ## 🛠️ Instalación y Configuración
 
 ### Prerrequisitos
-- Node.js (v18 o superior)
-- pnpm (gestor de paquetes)
+- **Node.js** (v18 o superior) - [Descargar aquí](https://nodejs.org/)
+- **pnpm** (gestor de paquetes) - [Instalar aquí](https://pnpm.io/installation)
+- **Git** - [Descargar aquí](https://git-scm.com/)
 
-### Instalación
+### 📥 Instalación Rápida (Solo para probar)
 
-1. **Clonar el repositorio:**
-   ```bash
-   git clone https://github.com/Edwin-Benito/Proyecto-Web.git
-   cd Proyecto-Web
-   ```
+Si solo quieres **probar el proyecto** sin contribuir:
 
-2. **Instalar dependencias del backend:**
-   ```bash
-   cd backend
-   pnpm install
-   ```
+```bash
+# 1. Clonar el repositorio
+git clone https://github.com/Edwin-Benito/Proyecto-Web.git
+cd Proyecto-Web
 
-3. **Instalar dependencias del frontend:**
-   ```bash
-   cd ../frontend/citas-frg
-   pnpm install
-   ```
+# 2. Instalar dependencias
+cd backend && pnpm install
+cd ../frontend/citas-frg && pnpm install
+
+# 3. Ejecutar (en terminales separadas)
+cd ../../backend && pnpm dev      # Terminal 1 - Backend en :3001
+cd ../frontend/citas-frg && pnpm dev  # Terminal 2 - Frontend en :3000
+```
+
+> **⚠️ Nota**: Si planeas **contribuir al proyecto**, ve a la sección [🤝 Trabajo en Equipo](#-trabajo-en-equipo-5-personas) para configuración completa.
 
 ## 🚀 Ejecución
 
@@ -121,31 +122,51 @@ Proyecto Web/
 
 Este proyecto está diseñado para trabajar colaborativamente con **5 desarrolladores**. Aquí tienes todos los comandos y flujo de trabajo necesarios:
 
-### ⚙️ Configuración Inicial para Nuevos Colaboradores
+### ⚙️ Configuración para Colaboradores del Equipo
 
-#### 1. **Clonar el Repositorio**
+> **📋 Esta sección es para miembros del equipo que van a contribuir al proyecto**
+
+#### 1. **Configuración Inicial de Git**
 ```bash
 # Clonar el proyecto
 git clone https://github.com/Edwin-Benito/Proyecto-Web.git
 cd Proyecto-Web
 
-# Configurar tu información de Git (solo la primera vez)
-git config user.name "Tu Nombre"
-git config user.email "tu.email@example.com"
+# Configurar tu información personal (IMPORTANTE - solo la primera vez)
+git config user.name "Tu Nombre Completo"
+git config user.email "tu.email@universidad.edu"
+
+# Verificar configuración
+git config --list
 ```
 
-#### 2. **Instalar Dependencias**
+#### 2. **Instalación Completa de Dependencias**
 ```bash
 # Instalar dependencias del backend
 cd backend
 pnpm install
 
-# Instalar dependencias del frontend
+# Instalar dependencias del frontend  
 cd ../frontend/citas-frg
 pnpm install
 
 # Volver a la raíz del proyecto
 cd ../..
+
+# Verificar que todo esté instalado correctamente
+git status
+```
+
+#### 3. **Verificar Configuración del Entorno**
+```bash
+# Verificar versiones
+node --version    # Debe ser v18+
+pnpm --version    # Debe estar instalado
+git --version     # Debe estar instalado
+
+# Probar que todo funcione
+cd backend && pnpm dev &          # Iniciar backend
+cd ../frontend/citas-frg && pnpm dev  # Iniciar frontend
 ```
 
 ### 🌟 Estrategia de Ramas para 5 Personas
