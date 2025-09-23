@@ -110,23 +110,21 @@ cd ../frontend/citas-frg && pnpm dev  # Terminal 2 - Frontend en :3000
 - ✅ **APIs REST** funcionales
 - ✅ **Interfaz interactiva** para probar la conectividad
 
-## � Equipo de Desarrollo
+## 👥 Equipo de Desarrollo
 
-- **Edwin Benito** - Team Lead & Backend Developer
-- **Francisco Gress** - Frontend Lead Developer  
+- **Edwin Benito** - Full Stack
+- **Francisco Gress** - Frontend (Comodin) 
 - **Jose Luis** - Frontend Developer
 - **Erick Rivas** - Backend Developer
-- **Aldo Pacheco** - UI/UX Developer
+- **Aldo Pacheco** - Backend Developer
 
 ## 🤝 Trabajo en Equipo (5 Personas)
 
 Este proyecto está diseñado para trabajar colaborativamente con **5 desarrolladores**. Aquí tienes todos los comandos y flujo de trabajo necesarios:
 
-### ⚙️ Configuración para Colaboradores del Equipo
+>### ⚙️ Configuración para Colaboradores del Equipo
 
 > **📋 Esta sección es para miembros del equipo que van a contribuir al proyecto**
-
-#### 1. **Configuración Inicial de Git**
 ```bash
 # Clonar el proyecto
 git clone https://github.com/Edwin-Benito/Proyecto-Web.git
@@ -301,7 +299,7 @@ git checkout -b nombre-rama origin/nombre-rama
 
 ### �️ Comandos de Desarrollo por Área
 
-#### **Frontend Team (Francisco & Jose Luis)**
+#### **Frontend Team**
 ```bash
 # Iniciar desarrollo frontend
 cd frontend/citas-frg
@@ -313,7 +311,7 @@ pnpm lint        # Revisar código
 pnpm type-check  # Verificar TypeScript
 ```
 
-#### **Backend Team (Edwin & Erick)**
+#### **Backend Team**
 ```bash
 # Iniciar desarrollo backend
 cd backend
@@ -324,7 +322,7 @@ pnpm start    # Modo producción
 node index.js # Ejecutar directo
 ```
 
-#### **UI/UX Team (Aldo)**
+#### **UI/UX Team**
 ```bash
 # Trabajar en estilos y componentes
 cd frontend/citas-frg
