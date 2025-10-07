@@ -14,6 +14,10 @@ Un proyecto fullstack desarrollado con **Next.js** (frontend) y **Express.js** (
 - [🤝 Trabajo en Equipo](#-trabajo-en-equipo-5-personas)
 - [📝 Notas de Desarrollo](#-notas-de-desarrollo)
 
+> 🚀 **Referencias Rápidas**:
+> - [Comandos esenciales](docs/QUICK_REFERENCE.md) - Lo mínimo que necesitas saber
+> - [Hoja de referencia completa](docs/WORKFLOW_CHEATSHEET.md) - Flujo paso a paso + comandos de emergencia
+
 ## 🚀 Tecnologías Utilizadas
 
 ### Frontend
