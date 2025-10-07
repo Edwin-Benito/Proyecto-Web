@@ -1,111 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
-/* Colores personalizados */
-@layer base {
-  :root {
-    --primary: 17 115 212;
-    --background-light: 246 247 248;
-    --background-dark: 16 25 34;
-    --text-light: 31 41 55;
-    --text-dark: 229 231 235;
-    --subtle-light: 107 114 128;
-    --subtle-dark: 156 163 175;
-    --border-light: 209 213 219;
-    --border-dark: 55 65 81;
-  }
-}
-
-/* Utilidades personalizadas */
-@layer utilities {
-  .text-primary {
-    color: rgb(var(--primary));
-  }
-  
-  .bg-background-light {
-    background-color: rgb(var(--background-light));
-  }
-  
-  .bg-background-dark {
-    background-color: rgb(var(--background-dark));
-  }
-  
-  .text-text-light {
-    color: rgb(var(--text-light));
-  }
-  
-  .text-text-dark {
-    color: rgb(var(--text-dark));
-  }
-  
-  .text-subtle-light {
-    color: rgb(var(--subtle-light));
-  }
-  
-  .text-subtle-dark {
-    color: rgb(var(--subtle-dark));
-  }
-  
-  .border-border-light {
-    border-color: rgb(var(--border-light));
-  }
-  
-  .border-border-dark {
-    border-color: rgb(var(--border-dark));
-  }
-  
-  .bg-primary {
-    background-color: rgb(var(--primary));
-  }
-  
-  .bg-primary\/90 {
-    background-color: rgb(var(--primary) / 0.9);
-  }
-  
-  .bg-primary\/70 {
-    background-color: rgb(var(--primary) / 0.7);
-  }
-  
-  .hover\:bg-primary\/90:hover {
-    background-color: rgb(var(--primary) / 0.9);
-  }
-  
-  .focus\:ring-primary:focus {
-    --tw-ring-color: rgb(var(--primary));
-  }
-  
-  .focus\:border-primary:focus {
-    border-color: rgb(var(--primary));
-  }
-  
-  .placeholder-subtle-light::placeholder {
-    color: rgb(var(--subtle-light));
-  }
-  
-  .placeholder-subtle-dark::placeholder {
-    color: rgb(var(--subtle-dark));
-  }
-  
-  .hover\:text-primary\/80:hover {
-    color: rgb(var(--primary) / 0.8);
-  }
-  
-  .focus\:ring-offset-background-light:focus {
-    --tw-ring-offset-color: rgb(var(--background-light));
-  }
-  
-  .focus\:ring-offset-background-dark:focus {
-    --tw-ring-offset-color: rgb(var(--background-dark));
-  }
-  
-  .font-display {
-    font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-  }
+/* Estilos base */
+* {
+  box-sizing: border-box;
 }
 
 html {
   font-feature-settings: "rlig" 1, "calt" 1;
+  scroll-behavior: smooth;
 }
 
 body {
+  font-family: 'Inter', sans-serif;
   font-feature-settings: "rlig" 1, "calt" 1;
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+}
+
+/* Variables CSS personalizadas para colores */
+:root {
+  --color-primary: #1173d4;
+  --color-background-light: #ffffff;
+  --color-text-light: #1f2937;
+  --color-subtle-light: #6b7280;
+  --color-border-light: #d1d5db;
+}
+
+.dark {
+  --color-background-dark: #111827;
+  --color-text-dark: #f9fafb;
+  --color-subtle-dark: #9ca3af;
+  --color-border-dark: #374151;
+}
+
+/* Asegurar que los estilos de Tailwind se apliquen correctamente */
+.bg-primary {
+  background-color: var(--color-primary);
+}
+
+.text-primary {
+  color: var(--color-primary);
+}
+
+.bg-background-light {
+  background-color: var(--color-background-light);
+}
+
+.text-text-light {
+  color: var(--color-text-light);
+}
+
+.text-subtle-light {
+  color: var(--color-subtle-light);
+}
+
+.border-border-light {
+  border-color: var(--color-border-light);
 }
