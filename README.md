@@ -122,6 +122,22 @@ cd ../frontend/citas-frg && pnpm dev  # Terminal 2 - Frontend en :3000
 
 Este proyecto está diseñado para trabajar colaborativamente con **5 desarrolladores**. Aquí tienes todos los comandos y flujo de trabajo necesarios:
 
+> ### 🌿 Crear la Rama Developer (Team Lead - Primera vez)
+> 
+> **Antes de que el equipo comience a trabajar, el Team Lead debe crear la rama `developer`:**
+> 
+> ```bash
+> # Opción 1: Usar el script automatizado
+> bash scripts/create-developer-branch.sh
+> 
+> # Opción 2: Crear manualmente
+> git checkout main
+> git checkout -b developer
+> git push -u origin developer
+> ```
+> 
+> 📖 **[Ver guía completa de la rama developer](DEVELOPER_BRANCH_SETUP.md)**
+
 >### ⚙️ Configuración para Colaboradores del Equipo
 
 > **📋 Esta sección es para miembros del equipo que van a contribuir al proyecto**
@@ -170,12 +186,15 @@ cd ../frontend/citas-frg && pnpm dev  # Iniciar frontend
 ### 🌟 Estrategia de Ramas para 5 Personas
 
 #### **Estructura de Ramas Recomendada:**
-- `main` - Rama principal (código estable)
-- `develop` - Rama de desarrollo (integración)
+- `main` - Rama principal (código estable en producción)
+- `developer` - Rama de desarrollo e integración del equipo
 - `feature/frontend-[nombre]` - Funcionalidades del frontend
 - `feature/backend-[nombre]` - Funcionalidades del backend
 - `feature/ui-[nombre]` - Diseño y componentes UI
 - `hotfix/[nombre]` - Correcciones urgentes
+
+> 📖 **[Ver guía completa de configuración de la rama developer](DEVELOPER_BRANCH_SETUP.md)**  
+> 🌳 **[Ver estrategia completa de ramas y flujo de trabajo](docs/BRANCHING_STRATEGY.md)**
 
 #### **División del Equipo por Roles:**
 1. **Edwin Benito (Team Lead)** - Arquitectura general y APIs principales
@@ -188,9 +207,9 @@ cd ../frontend/citas-frg && pnpm dev  # Iniciar frontend
 
 #### **Crear y Trabajar en una Nueva Rama**
 ```bash
-# Actualizar main antes de crear una rama
-git checkout main
-git pull origin main
+# Actualizar developer antes de crear una rama
+git checkout developer
+git pull origin developer
 
 # Crear una nueva rama (ejemplos por rol)
 git checkout -b feature/frontend-login          # Frontend
@@ -207,7 +226,7 @@ git branch -a
 ```bash
 # 1. Comenzar el día - actualizar tu rama
 git checkout tu-rama
-git pull origin main  # Traer cambios nuevos de main
+git pull origin developer  # Traer cambios nuevos de developer
 
 # 2. Trabajar en tu código...
 # (hacer cambios en el código)
@@ -220,50 +239,54 @@ git commit -m "feat: descripción del cambio realizado"
 git push origin tu-rama
 
 # 5. Al final del día o funcionalidad completa
-# Crear Pull Request en GitHub para revisar código
+# Crear Pull Request en GitHub hacia developer para revisar código
 ```
 
 #### **Sincronización con el Equipo**
 ```bash
-# Actualizar rama develop con los últimos cambios
-git checkout develop
-git pull origin develop
+# Actualizar rama developer con los últimos cambios
+git checkout developer
+git pull origin developer
 
-# Actualizar tu rama con cambios de develop
+# Actualizar tu rama con cambios de developer
 git checkout tu-rama
-git merge develop
+git merge developer
 
 # Si hay conflictos, resolverlos y hacer commit
 git add .
-git commit -m "merge: resolver conflictos con develop"
+git commit -m "merge: resolver conflictos con developer"
 ```
 
 ### 🔄 Flujo de Integración (Para el Team Lead)
 
-#### **Crear Rama Develop (solo una vez)**
+#### **Crear Rama Developer (solo una vez)**
 ```bash
 git checkout main
-git checkout -b develop
-git push -u origin develop
+git checkout -b developer
+git push -u origin developer
 ```
 
 #### **Integrar Funcionalidades**
 ```bash
-# 1. Cambiar a develop
-git checkout develop
-git pull origin develop
+# 1. Cambiar a developer
+git checkout developer
+git pull origin developer
 
-# 2. Mergear rama de funcionalidad
-git merge feature/nombre-de-rama
+# 2. Revisar y aprobar Pull Requests en GitHub
+# (Los PR van de feature/* a developer)
 
-# 3. Subir develop actualizado
-git push origin develop
+# 3. Después de hacer merge en GitHub, actualizar local
+git pull origin developer
 
-# 4. Cuando develop esté estable, mergear a main
+# 4. Cuando developer esté estable, crear PR de developer a main
+# O mergear localmente:
 git checkout main
-git merge develop
+git pull origin main
+git merge developer
 git push origin main
 ```
+
+> 📖 **[Guía detallada del flujo con developer](DEVELOPER_BRANCH_SETUP.md)**
 
 ### 🛠️ Comandos Útiles para el Equipo
 
