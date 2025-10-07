@@ -52,7 +52,14 @@ git checkout -b feature/nombre-de-tu-modulo
    ```bash
    git add .
    git commit -m "feat: descripción del cambio"
-   git push origin feature/nombre-de-tu-modulo
+   git push origin nombre-de-tu-rama-actual
+   ```
+   
+   **Ejemplos según tu rama:**
+   ```bash
+   git push origin feature/frontend-login    # Si estás en esa rama
+   git push origin feature/backend-api       # Si estás en esa rama
+   git push origin develop                   # Si estás en develop
    ```
 3. **Crea un Pull Request (PR) en GitHub:**
    - **¡Importante!** El PR debe ir de tu rama `feature/...` **hacia `develop`**.
