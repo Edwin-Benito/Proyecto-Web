@@ -1,8 +1,25 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Oficio, OfficiosFilter } from '@/app/types'
 import { oficiosService } from '@/services'
+
+// Hook personalizado para debouncing
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value)
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value)
+    }, delay)
+
+    return () => {
+      clearTimeout(handler)
+    }
+  }, [value, delay])
+
+  return debouncedValue
+}
 
 type SortField = 'numeroExpediente' | 'nombreSolicitante' | 'fechaIngreso' | 'estado' | 'prioridad'
 type SortOrder = 'asc' | 'desc'
@@ -19,6 +36,18 @@ export function OfficiosTable() {
   const [prioridadFilter, setPrioridadFilter] = useState<Oficio['prioridad'] | ''>('')
   const [peritoFilter, setPeritoFilter] = useState('')
   
+  // Debounced search term para evitar peticiones excesivas
+  const debouncedSearchTerm = useDebounce(searchTerm, 500) // 500ms delay para mejor UX
+  
+  // Efecto para mostrar indicador de búsqueda
+  useEffect(() => {
+    if (searchTerm !== debouncedSearchTerm) {
+      setIsSearching(true)
+    } else {
+      setIsSearching(false)
+    }
+  }, [searchTerm, debouncedSearchTerm])
+  
   // Estados para paginación y ordenamiento
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
@@ -29,6 +58,7 @@ export function OfficiosTable() {
   // Estados para UI
   const [selectedOficios, setSelectedOficios] = useState<Set<string>>(new Set())
   const [showFilters, setShowFilters] = useState(false)
+  const [isSearching, setIsSearching] = useState(false)
 
   // Cargar oficios
   const loadOficios = async () => {
@@ -41,7 +71,7 @@ export function OfficiosTable() {
         limit: pageSize,
         sortBy: sortField,
         sortOrder,
-        busqueda: searchTerm || undefined,
+        busqueda: debouncedSearchTerm || undefined,
         estado: estadoFilter || undefined,
         prioridad: prioridadFilter || undefined,
       }
@@ -152,10 +182,17 @@ export function OfficiosTable() {
     }
   }
 
-  // Efecto para cargar datos
+  // Efecto para cargar datos - usando debouncedSearchTerm en lugar de searchTerm
   useEffect(() => {
     loadOficios()
-  }, [currentPage, pageSize, sortField, sortOrder, searchTerm, estadoFilter, prioridadFilter])
+  }, [currentPage, pageSize, sortField, sortOrder, debouncedSearchTerm, estadoFilter, prioridadFilter])
+
+  // Efecto separado para resetear página cuando cambia la búsqueda
+  useEffect(() => {
+    if (currentPage !== 1) {
+      setCurrentPage(1)
+    }
+  }, [debouncedSearchTerm, estadoFilter, prioridadFilter])
 
   // Calcular páginas
   const totalPages = Math.ceil(totalItems / pageSize)
@@ -261,9 +298,24 @@ export function OfficiosTable() {
       <div className="p-6 border-b border-gray-200">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div className="flex-1">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">
               Recepción de Oficios ({totalItems})
             </h2>
+            {/* Indicador de búsqueda activa */}
+            {debouncedSearchTerm && (
+              <p className="text-sm text-gray-600 mb-4">
+                Mostrando resultados para: <span className="font-medium">"{debouncedSearchTerm}"</span>
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="ml-2 text-blue-600 hover:text-blue-800 underline"
+                >
+                  Limpiar filtro
+                </button>
+              </p>
+            )}
+            {!debouncedSearchTerm && (
+              <div className="mb-4" />
+            )}
             
             <div className="flex flex-col sm:flex-row gap-3">
               {/* Búsqueda */}
@@ -271,7 +323,9 @@ export function OfficiosTable() {
                 <input
                   type="text"
                   placeholder="Buscar por expediente, nombre o perito..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={`w-full pl-10 pr-10 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                    isSearching ? 'border-blue-300 bg-blue-50' : 'border-gray-300'
+                  }`}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -280,6 +334,26 @@ export function OfficiosTable() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
+                {/* Indicador de búsqueda en progreso */}
+                {isSearching && (
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <svg className="animate-spin h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  </div>
+                )}
+                {/* Botón para limpiar búsqueda */}
+                {searchTerm && !isSearching && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
               </div>
 
               {/* Botón de filtros */}
