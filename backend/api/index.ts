@@ -62,6 +62,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api', apiRoutes);
 
 // Ruta raíz
+// @ts-ignore - Vercel serverless compatibility
 app.get('/', (req, res) => {
   return res.json({
     success: true,
@@ -73,6 +74,7 @@ app.get('/', (req, res) => {
 });
 
 // Ruta de salud
+// @ts-ignore - Vercel serverless compatibility
 app.get('/health', (req, res) => {
   return res.json({
     success: true,
