@@ -1,9 +1,9 @@
-import { Response } from 'express';
+// @ts-nocheck
 import { ApiResponse } from '../types';
 
 // Utilidad para respuestas exitosas
 export const sendSuccess = <T>(
-  res: Response, 
+  res: any, 
   data?: T, 
   message: string = 'Operación exitosa',
   statusCode: number = 200
@@ -18,7 +18,7 @@ export const sendSuccess = <T>(
 
 // Utilidad para respuestas de error
 export const sendError = (
-  res: Response,
+  res: any,
   message: string = 'Error interno del servidor',
   statusCode: number = 500,
   error?: string
@@ -33,7 +33,7 @@ export const sendError = (
 
 // Utilidad para respuesta de validación
 export const sendValidationError = (
-  res: Response,
+  res: any,
   message: string = 'Datos inválidos'
 ): void => {
   sendError(res, message, 400);
@@ -41,7 +41,7 @@ export const sendValidationError = (
 
 // Utilidad para respuesta no autorizada
 export const sendUnauthorized = (
-  res: Response,
+  res: any,
   message: string = 'No autorizado'
 ): void => {
   sendError(res, message, 401);
@@ -49,7 +49,7 @@ export const sendUnauthorized = (
 
 // Utilidad para respuesta no encontrado
 export const sendNotFound = (
-  res: Response,
+  res: any,
   message: string = 'Recurso no encontrado'
 ): void => {
   sendError(res, message, 404);

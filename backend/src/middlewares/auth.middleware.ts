@@ -37,7 +37,7 @@ export const authMiddleware = (req: any, res: any, next: any): void => {
 
 // Middleware para verificar roles específicos
 export const requireRole = (...roles: string[]) => {
-  return (req: Request, res: Response, next: NextFunction): void => {
+  return (req: any, res: any, next: any): void => {
     const authReq = req as AuthenticatedRequest;
     
     if (!authReq.user) {

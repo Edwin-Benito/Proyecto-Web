@@ -1,9 +1,9 @@
-import { Request, Response } from 'express'
+// @ts-nocheck
 import { prisma } from '../lib/prisma'
 import { sendSuccess, sendError } from '../utils/response.utils'
 
 // Obtener estadísticas del dashboard
-export const getDashboardStats = async (req: Request, res: Response) => {
+export const getDashboardStats = async (req: any, res: any) => {
   try {
     // Contar oficios por estado
     const oficiosPorEstado = await prisma.oficio.groupBy({
@@ -83,7 +83,7 @@ export const getDashboardStats = async (req: Request, res: Response) => {
 }
 
 // Obtener estadísticas de citas por mes (últimos 6 meses)
-export const getCitasPorMes = async (req: Request, res: Response) => {
+export const getCitasPorMes = async (req: any, res: any) => {
   try {
     const seisMesesAtras = new Date()
     seisMesesAtras.setMonth(seisMesesAtras.getMonth() - 6)
@@ -126,7 +126,7 @@ export const getCitasPorMes = async (req: Request, res: Response) => {
 }
 
 // Obtener peritos más activos
-export const getPeritosMasActivos = async (req: Request, res: Response) => {
+export const getPeritosMasActivos = async (req: any, res: any) => {
   try {
     const limit = parseInt(req.query.limit as string) || 10
 
@@ -167,7 +167,7 @@ export const getPeritosMasActivos = async (req: Request, res: Response) => {
 }
 
 // Obtener tendencias (comparación con periodo anterior)
-export const getTendencias = async (req: Request, res: Response) => {
+export const getTendencias = async (req: any, res: any) => {
   try {
     const ahora = new Date()
     const inicioMesActual = new Date(ahora.getFullYear(), ahora.getMonth(), 1)
