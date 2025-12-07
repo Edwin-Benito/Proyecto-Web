@@ -3,22 +3,10 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import { apiRoutes } from '../src/routes/index.js';
+import { errorHandler } from '../src/middlewares/error.middleware.js';
 
 const app = express();
-
-// Importación dinámica con manejo de errores
-let apiRoutes;
-let errorHandler;
-
-try {
-  const routes = require('../src/routes');
-  apiRoutes = routes.apiRoutes;
-  
-  const middleware = require('../src/middlewares/error.middleware');
-  errorHandler = middleware.errorHandler;
-} catch (error) {
-  console.error('Error importando módulos:', error);
-}
 
 // Configurar helmet para security headers
 app.use(helmet({
@@ -85,9 +73,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Montar todas las rutas API
-if (apiRoutes) {
-  app.use('/api', apiRoutes);
-}
+app.use('/api', apiRoutes);
 
 // Ruta raíz
 app.get('/', (req, res) => {
@@ -111,9 +97,7 @@ app.get('/health', (req, res) => {
 });
 
 // Middleware de manejo de errores (debe ir al final)
-if (errorHandler) {
-  app.use(errorHandler);
-}
+app.use(errorHandler);
 
 // Exportar para Vercel Serverless Functions
 export default app;
