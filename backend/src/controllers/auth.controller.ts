@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
+import bcrypt from 'bcrypt';
 import { LoginRequest, AuthenticatedRequest, JWTPayload } from '../types';
-import { findUserByEmail, findUserById } from '../models/usuario.model';
+import { prisma } from '../lib/prisma';
 import { generateToken } from '../utils/jwt.utils';
 import { sendSuccess, sendError, sendValidationError, sendUnauthorized } from '../utils/response.utils';
 
@@ -17,10 +18,20 @@ export class AuthController {
         return;
       }
       
-      // Buscar usuario
-      const usuario = findUserByEmail(email);
+      // Buscar usuario en la base de datos
+      const usuario = await prisma.usuario.findUnique({
+        where: { email }
+      });
       
-      if (!usuario || usuario.password !== password) {
+      if (!usuario) {
+        sendUnauthorized(res, 'Credenciales inválidas');
+        return;
+      }
+      
+      // Verificar contraseña con bcrypt
+      const passwordValida = await bcrypt.compare(password, usuario.password);
+      
+      if (!passwordValida) {
         sendUnauthorized(res, 'Credenciales inválidas');
         return;
       }
@@ -57,7 +68,9 @@ export class AuthController {
   static async getProfile(req: Request, res: Response): Promise<void> {
     try {
       const authReq = req as AuthenticatedRequest;
-      const usuario = findUserById(authReq.user?.userId || '');
+      const usuario = await prisma.usuario.findUnique({
+        where: { id: authReq.user?.userId || '' }
+      });
       
       if (!usuario) {
         sendError(res, 'Usuario no encontrado', 404);
@@ -76,5 +89,63 @@ export class AuthController {
   // Logout (opcional - para invalidar tokens en el servidor)
   static async logout(req: Request, res: Response): Promise<void> {
     sendSuccess(res, null, 'Logout exitoso');
+  }
+
+  // Registrar nuevo usuario
+  static async register(req: Request, res: Response): Promise<void> {
+    try {
+      const { email, password, nombre, apellido, rol } = req.body;
+      
+      // Validar campos requeridos
+      if (!email || !password || !nombre || !apellido) {
+        sendValidationError(res, 'Todos los campos son requeridos');
+        return;
+      }
+
+      // Verificar si el email ya existe
+      const usuarioExistente = await prisma.usuario.findUnique({
+        where: { email }
+      });
+
+      if (usuarioExistente) {
+        sendValidationError(res, 'El email ya está registrado');
+        return;
+      }
+
+      // Hashear contraseña con bcrypt
+      const passwordHash = await bcrypt.hash(password, 10);
+
+      // Crear nuevo usuario
+      const nuevoUsuario = await prisma.usuario.create({
+        data: {
+          email,
+          password: passwordHash,
+          nombre,
+          apellido,
+          rol: rol || 'COORDINADOR'
+        }
+      });
+
+      // Remover password de la respuesta
+      const { password: _, ...usuarioSinPassword } = nuevoUsuario;
+
+      // Generar token
+      const tokenPayload: JWTPayload = {
+        userId: nuevoUsuario.id,
+        email: nuevoUsuario.email,
+        rol: nuevoUsuario.rol
+      };
+      
+      const token = generateToken(tokenPayload);
+
+      sendSuccess(res, {
+        user: usuarioSinPassword,
+        token
+      }, 'Usuario registrado exitosamente', 201);
+      
+    } catch (error) {
+      console.error('Error en registro:', error);
+      sendError(res, 'Error interno del servidor');
+    }
   }
 }

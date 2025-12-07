@@ -8,32 +8,65 @@ const router = Router();
 
 // Validaciones para crear oficio
 const createOfficioValidation = [
-  body('expediente')
+  body('numeroExpediente')
     .notEmpty()
-    .withMessage('El número de expediente es requerido'),
-  body('nombre')
+    .withMessage('El número de expediente es requerido')
+    .trim()
+    .escape(),
+  body('nombreSolicitante')
     .isLength({ min: 2 })
-    .withMessage('El nombre debe tener al menos 2 caracteres'),
-  body('dependencia')
+    .withMessage('El nombre debe tener al menos 2 caracteres')
+    .trim()
+    .escape(),
+  body('apellidoSolicitante')
+    .isLength({ min: 2 })
+    .withMessage('El apellido debe tener al menos 2 caracteres')
+    .trim()
+    .escape(),
+  body('cedulaSolicitante')
     .notEmpty()
-    .withMessage('La dependencia es requerida'),
-  body('tipo')
-    .isIn(['Pericial', 'Ampliación', 'Aclaración', 'Ratificación'])
-    .withMessage('Tipo de oficio inválido'),
-  body('fecha_recepcion')
+    .withMessage('La cédula es requerida')
+    .trim()
+    .escape(),
+  body('tipoPeritaje')
+    .notEmpty()
+    .withMessage('El tipo de peritaje es requerido')
+    .trim()
+    .escape(),
+  body('descripcion')
+    .notEmpty()
+    .withMessage('La descripción es requerida')
+    .trim()
+    .escape(),
+  body('fechaVencimiento')
     .isISO8601()
-    .withMessage('Fecha de recepción debe ser una fecha válida'),
+    .withMessage('Fecha de vencimiento debe ser una fecha válida'),
+  body('prioridad')
+    .optional()
+    .isIn(['BAJA', 'MEDIA', 'ALTA', 'URGENTE'])
+    .withMessage('Prioridad inválida'),
   validateRequest
 ];
 
-// Validaciones para actualizar oficio
-const updateOfficioValidation = [
-  body('expediente').optional().notEmpty().withMessage('El número de expediente es requerido'),
-  body('nombre').optional().isLength({ min: 2 }).withMessage('El nombre debe tener al menos 2 caracteres'),
-  body('dependencia').optional().notEmpty().withMessage('La dependencia es requerida'),
-  body('tipo').optional().isIn(['Pericial', 'Ampliación', 'Aclaración', 'Ratificación']).withMessage('Tipo de oficio inválido'),
-  body('fecha_recepcion').optional().isISO8601().withMessage('Fecha de recepción debe ser una fecha válida'),
-  body('estado').optional().isIn(['Pendiente', 'En Proceso', 'Completado', 'Cancelado']).withMessage('Estado inválido'),
+// Validaciones para actualizar estado
+const changeStatusValidation = [
+  body('estado')
+    .isIn(['PENDIENTE', 'ASIGNADO', 'EN_PROCESO', 'COMPLETADO', 'CANCELADO'])
+    .withMessage('Estado inválido'),
+  body('observaciones')
+    .optional()
+    .trim()
+    .escape(),
+  validateRequest
+];
+
+// Validaciones para asignar perito
+const assignPeritoValidation = [
+  body('peritoId')
+    .notEmpty()
+    .withMessage('El ID del perito es requerido')
+    .isUUID()
+    .withMessage('ID de perito inválido'),
   validateRequest
 ];
 
@@ -41,8 +74,8 @@ const updateOfficioValidation = [
 const queryValidation = [
   query('page').optional().isInt({ min: 1 }).withMessage('La página debe ser un número mayor a 0'),
   query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('El límite debe estar entre 1 y 100'),
-  query('tipo').optional().isIn(['Pericial', 'Ampliación', 'Aclaración', 'Ratificación']).withMessage('Tipo de oficio inválido'),
-  query('estado').optional().isIn(['Pendiente', 'En Proceso', 'Completado', 'Cancelado']).withMessage('Estado inválido'),
+  query('estado').optional().isIn(['PENDIENTE', 'ASIGNADO', 'EN_PROCESO', 'COMPLETADO', 'CANCELADO']).withMessage('Estado inválido'),
+  query('prioridad').optional().isIn(['BAJA', 'MEDIA', 'ALTA', 'URGENTE']).withMessage('Prioridad inválida'),
   validateRequest
 ];
 
@@ -53,9 +86,10 @@ router.use(authMiddleware);
 router.get('/', queryValidation, OfficiosController.getOficios);
 router.get('/:id', OfficiosController.getOficioById);
 router.post('/', createOfficioValidation, OfficiosController.createOficio);
+router.put('/:id', OfficiosController.updateOficio);
 
 // Rutas específicas
-router.put('/:id/perito', OfficiosController.assignPerito);
-router.patch('/:id/status', OfficiosController.changeStatus);
+router.put('/:id/perito', assignPeritoValidation, OfficiosController.assignPerito);
+router.patch('/:id/status', changeStatusValidation, OfficiosController.changeStatus);
 
 export { router as oficiosRoutes };

@@ -129,7 +129,7 @@ class OfficiosService {
     descripcion: string
     usuario: string
     fecha: string
-    detalles?: any
+    detalles?: unknown
   }>>> {
     return apiService.get(`/oficios/${id}/history`)
   }

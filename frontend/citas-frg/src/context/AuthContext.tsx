@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react'
 import { User } from '@/app/types'
 import { authService } from '@/services'
 
@@ -23,15 +23,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Verificar autenticación al iniciar
-  useEffect(() => {
-    checkAuthStatus()
-  }, [])
+  
 
-  const checkAuthStatus = async () => {
+  const logout = useCallback(async () => {
     try {
       setIsLoading(true)
-      
+      await authService.logout()
+    } catch (error) {
+      console.error('Logout error:', error)
+    } finally {
+      setUser(null)
+      setIsLoading(false)
+
+      // Redirigir al login
+      window.location.href = '/'
+    }
+  }, [])
+
+  const checkAuthStatus = useCallback(async () => {
+    try {
+      setIsLoading(true)
+
       if (!authService.isAuthenticated()) {
         setUser(null)
         return
@@ -41,7 +53,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const currentUser = authService.getCurrentUser()
       if (currentUser) {
         setUser(currentUser)
-        
+
         // Verificar con el servidor que el token sigue siendo válido
         try {
           const response = await authService.getProfile()
@@ -64,7 +76,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [logout])
 
   const login = async (email: string, password: string) => {
     try {
@@ -87,22 +99,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setIsLoading(false)
     }
   }
-
-  const logout = async () => {
-    try {
-      setIsLoading(true)
-      await authService.logout()
-    } catch (error) {
-      console.error('Logout error:', error)
-    } finally {
-      setUser(null)
-      setIsLoading(false)
-      
-      // Redirigir al login
-      window.location.href = '/'
-    }
-  }
-
   const refreshUser = async () => {
     try {
       const response = await authService.getProfile()
@@ -116,6 +112,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       await logout()
     }
   }
+
+  // Ejecutar verificación de autenticación al montar (checkAuthStatus está memoizado)
+  useEffect(() => {
+    checkAuthStatus()
+  }, [checkAuthStatus])
 
   const value: AuthContextType = {
     user,

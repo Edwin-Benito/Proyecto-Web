@@ -19,20 +19,28 @@ const loginValidation = [
 
 // Validaciones para el registro
 const registerValidation = [
-  body('name')
+  body('nombre')
     .isLength({ min: 2 })
     .withMessage('El nombre debe tener al menos 2 caracteres'),
+  body('apellido')
+    .isLength({ min: 2 })
+    .withMessage('El apellido debe tener al menos 2 caracteres'),
   body('email')
     .isEmail()
     .withMessage('Debe proporcionar un email válido'),
   body('password')
     .isLength({ min: 6 })
     .withMessage('La contraseña debe tener al menos 6 caracteres'),
+  body('rol')
+    .optional()
+    .isIn(['ADMINISTRADOR', 'COORDINADOR', 'PERITO'])
+    .withMessage('Rol inválido'),
   validateRequest
 ];
 
 // Rutas públicas
 router.post('/login', loginValidation, AuthController.login);
+router.post('/register', registerValidation, AuthController.register);
 
 // Rutas protegidas
 router.get('/profile', authMiddleware, AuthController.getProfile);
