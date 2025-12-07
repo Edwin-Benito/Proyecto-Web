@@ -62,8 +62,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api', apiRoutes);
 
 // Ruta raíz
-app.get('/', (req: express.Request, res: express.Response) => {
-  res.json({
+app.get('/', (req, res) => {
+  return res.json({
     success: true,
     message: '¡Servidor API Peritos funcionando en Vercel!',
     version: '2.0.0',
@@ -73,8 +73,8 @@ app.get('/', (req: express.Request, res: express.Response) => {
 });
 
 // Ruta de salud
-app.get('/health', (req: express.Request, res: express.Response) => {
-  res.json({
+app.get('/health', (req, res) => {
+  return res.json({
     success: true,
     message: 'API funcionando correctamente',
     timestamp: new Date().toISOString()
