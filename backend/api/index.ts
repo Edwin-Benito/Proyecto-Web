@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
@@ -62,7 +62,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api', apiRoutes);
 
 // Ruta raíz
-app.get('/', (req, res) => {
+app.get('/', (req: Request, res: Response) => {
   res.json({
     success: true,
     message: '¡Servidor API Peritos funcionando en Vercel!',
@@ -73,7 +73,7 @@ app.get('/', (req, res) => {
 });
 
 // Ruta de salud
-app.get('/health', (req, res) => {
+app.get('/health', (req: Request, res: Response) => {
   res.json({
     success: true,
     message: 'API funcionando correctamente',
