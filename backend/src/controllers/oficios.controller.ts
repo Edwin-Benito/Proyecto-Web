@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { AuthenticatedRequest, OfficiosFilter, PaginatedResponse, Oficio } from '../types';
-import { oficios, findOficioById, createOficio, updateOficio } from '../models/oficio.model';
-import { findPeritoById } from '../models/perito.model';
+import { prisma } from '../lib/prisma';
 import { sendSuccess, sendError, sendNotFound, sendValidationError } from '../utils/response.utils';
 
 export class OfficiosController {
@@ -17,70 +16,108 @@ export class OfficiosController {
         estado,
         prioridad,
         peritoId,
-        fechaDesde,
-        fechaHasta,
         tipoPeritaje,
-        busqueda
+        busqueda,
+        numeroExpediente,
+        nombreSolicitante,
+        cedulaSolicitante,
+        fechaDesde,
+        fechaHasta
       } = req.query;
 
-      let filteredOficios = [...oficios];
-
-      // Aplicar filtros
-      if (estado) {
-        filteredOficios = filteredOficios.filter(o => o.estado === estado);
-      }
-      
-      if (prioridad) {
-        filteredOficios = filteredOficios.filter(o => o.prioridad === prioridad);
-      }
-      
-      if (peritoId) {
-        filteredOficios = filteredOficios.filter(o => o.peritoId === peritoId);
-      }
-      
-      if (tipoPeritaje) {
-        filteredOficios = filteredOficios.filter(o => 
-          o.tipoPeritaje.toLowerCase().includes((tipoPeritaje as string).toLowerCase())
-        );
-      }
-      
-      if (busqueda) {
-        const searchTerm = (busqueda as string).toLowerCase();
-        filteredOficios = filteredOficios.filter(o => 
-          o.numeroExpediente.toLowerCase().includes(searchTerm) ||
-          o.nombreSolicitante.toLowerCase().includes(searchTerm) ||
-          o.apellidoSolicitante.toLowerCase().includes(searchTerm) ||
-          o.cedulaSolicitante.includes(searchTerm)
-        );
-      }
-
-      // Ordenamiento
-      filteredOficios.sort((a, b) => {
-        const aValue = a[sortBy as keyof Oficio] as string;
-        const bValue = b[sortBy as keyof Oficio] as string;
-        
-        if (sortOrder === 'asc') {
-          return aValue > bValue ? 1 : -1;
-        } else {
-          return aValue < bValue ? 1 : -1;
-        }
-      });
-
-      // Paginación
       const pageNum = parseInt(page as string);
       const limitNum = parseInt(limit as string);
-      const startIndex = (pageNum - 1) * limitNum;
-      const endIndex = startIndex + limitNum;
-      
-      const paginatedOficios = filteredOficios.slice(startIndex, endIndex);
-      const totalPages = Math.ceil(filteredOficios.length / limitNum);
+      const skip = (pageNum - 1) * limitNum;
 
-      const response: PaginatedResponse<Oficio> = {
-        data: paginatedOficios,
-        total: filteredOficios.length,
+      // Construir filtros dinámicos
+      const where: any = {};
+
+      if (estado) where.estado = estado;
+      if (prioridad) where.prioridad = prioridad;
+      if (peritoId) where.peritoId = peritoId;
+      if (tipoPeritaje) {
+        where.tipoPeritaje = {
+          contains: tipoPeritaje as string,
+          mode: 'insensitive'
+        };
+      }
+
+      // Filtros específicos adicionales
+      if (numeroExpediente) {
+        where.numeroExpediente = {
+          contains: numeroExpediente as string,
+          mode: 'insensitive'
+        };
+      }
+
+      if (nombreSolicitante) {
+        where.OR = [
+          { nombreSolicitante: { contains: nombreSolicitante as string, mode: 'insensitive' } },
+          { apellidoSolicitante: { contains: nombreSolicitante as string, mode: 'insensitive' } }
+        ];
+      }
+
+      if (cedulaSolicitante) {
+        where.cedulaSolicitante = {
+          contains: cedulaSolicitante as string
+        };
+      }
+
+      // Filtro por rango de fechas
+      if (fechaDesde || fechaHasta) {
+        where.fechaIngreso = {};
+        if (fechaDesde) {
+          where.fechaIngreso.gte = new Date(fechaDesde as string);
+        }
+        if (fechaHasta) {
+          // Agregar 23:59:59 para incluir todo el día
+          const hasta = new Date(fechaHasta as string);
+          hasta.setHours(23, 59, 59, 999);
+          where.fechaIngreso.lte = hasta;
+        }
+      }
+
+      // Búsqueda global (sobrescribe filtros específicos si está presente)
+      if (busqueda) {
+        where.OR = [
+          { numeroExpediente: { contains: busqueda as string, mode: 'insensitive' } },
+          { nombreSolicitante: { contains: busqueda as string, mode: 'insensitive' } },
+          { apellidoSolicitante: { contains: busqueda as string, mode: 'insensitive' } },
+          { cedulaSolicitante: { contains: busqueda as string } },
+          { tipoPeritaje: { contains: busqueda as string, mode: 'insensitive' } }
+        ];
+      }
+
+      // Ejecutar queries en paralelo
+      const [oficios, total] = await Promise.all([
+        prisma.oficio.findMany({
+          where,
+          include: {
+            perito: true,
+            creadoPor: {
+              select: {
+                id: true,
+                nombre: true,
+                apellido: true,
+                email: true
+              }
+            }
+          },
+          orderBy: {
+            [sortBy as string]: sortOrder as 'asc' | 'desc'
+          },
+          skip,
+          take: limitNum
+        }),
+        prisma.oficio.count({ where })
+      ]);
+
+      const response: PaginatedResponse<any> = {
+        data: oficios,
+        total,
         page: pageNum,
         limit: limitNum,
-        totalPages: totalPages
+        totalPages: Math.ceil(total / limitNum)
       };
 
       sendSuccess(res, response, 'Oficios obtenidos exitosamente');
@@ -95,7 +132,49 @@ export class OfficiosController {
   static async getOficioById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const oficio = findOficioById(id);
+      
+      const oficio = await prisma.oficio.findUnique({
+        where: { id },
+        include: {
+          perito: true,
+          creadoPor: {
+            select: {
+              id: true,
+              nombre: true,
+              apellido: true,
+              email: true
+            }
+          },
+          documentos: true,
+          comentarios: {
+            include: {
+              autor: {
+                select: {
+                  id: true,
+                  nombre: true,
+                  apellido: true
+                }
+              }
+            },
+            orderBy: {
+              createdAt: 'desc'
+            }
+          },
+          citas: {
+            include: {
+              perito: true
+            },
+            orderBy: {
+              fechaInicio: 'asc'
+            }
+          },
+          historial: {
+            orderBy: {
+              createdAt: 'desc'
+            }
+          }
+        }
+      });
       
       if (!oficio) {
         sendNotFound(res, 'Oficio no encontrado');
@@ -113,9 +192,33 @@ export class OfficiosController {
   // Crear un nuevo oficio
   static async createOficio(req: Request, res: Response): Promise<void> {
     try {
-      const nuevoOficio = createOficio({
-        ...req.body,
-        documentos: []
+      const authReq = req as AuthenticatedRequest;
+      
+      const nuevoOficio = await prisma.oficio.create({
+        data: {
+          ...req.body,
+          creadoPorId: authReq.user?.userId
+        },
+        include: {
+          perito: true,
+          creadoPor: {
+            select: {
+              id: true,
+              nombre: true,
+              apellido: true
+            }
+          }
+        }
+      });
+
+      // Crear registro en historial
+      await prisma.historialOficio.create({
+        data: {
+          accion: 'CREADO',
+          descripcion: 'Oficio creado en el sistema',
+          oficioId: nuevoOficio.id,
+          realizadoPor: authReq.user?.userId || ''
+        }
       });
 
       sendSuccess(res, nuevoOficio, 'Oficio creado exitosamente', 201);
@@ -131,9 +234,10 @@ export class OfficiosController {
     try {
       const { id } = req.params;
       const { peritoId } = req.body;
+      const authReq = req as AuthenticatedRequest;
       
-      const oficio = findOficioById(id);
-      const perito = findPeritoById(peritoId);
+      const oficio = await prisma.oficio.findUnique({ where: { id } });
+      const perito = await prisma.perito.findUnique({ where: { id: peritoId } });
       
       if (!oficio) {
         sendNotFound(res, 'Oficio no encontrado');
@@ -145,11 +249,26 @@ export class OfficiosController {
         return;
       }
 
-      const oficioActualizado = updateOficio(id, {
-        peritoId: peritoId,
-        peritoAsignado: perito,
-        fechaAsignacion: new Date().toISOString(),
-        estado: 'asignado'
+      const oficioActualizado = await prisma.oficio.update({
+        where: { id },
+        data: {
+          peritoId,
+          fechaAsignacion: new Date(),
+          estado: 'ASIGNADO'
+        },
+        include: {
+          perito: true
+        }
+      });
+
+      // Crear registro en historial
+      await prisma.historialOficio.create({
+        data: {
+          accion: 'ASIGNADO',
+          descripcion: `Oficio asignado al perito ${perito.nombre} ${perito.apellido}`,
+          oficioId: id,
+          realizadoPor: authReq.user?.userId || ''
+        }
       });
 
       sendSuccess(res, oficioActualizado, 'Perito asignado exitosamente');
@@ -165,23 +284,156 @@ export class OfficiosController {
     try {
       const { id } = req.params;
       const { estado, observaciones } = req.body;
+      const authReq = req as AuthenticatedRequest;
       
-      const oficio = findOficioById(id);
+      const oficio = await prisma.oficio.findUnique({ where: { id } });
       
       if (!oficio) {
         sendNotFound(res, 'Oficio no encontrado');
         return;
       }
 
-      const oficioActualizado = updateOficio(id, {
-        estado,
-        observaciones
+      const estadoAnterior = oficio.estado;
+
+      const oficioActualizado = await prisma.oficio.update({
+        where: { id },
+        data: {
+          estado,
+          observaciones
+        }
+      });
+
+      // Crear registro en historial
+      await prisma.historialOficio.create({
+        data: {
+          accion: 'CAMBIO_ESTADO',
+          descripcion: `Estado cambiado de ${estadoAnterior} a ${estado}`,
+          estadoAnterior: { estado: estadoAnterior },
+          estadoNuevo: { estado },
+          oficioId: id,
+          realizadoPor: authReq.user?.userId || ''
+        }
       });
 
       sendSuccess(res, oficioActualizado, 'Estado del oficio actualizado exitosamente');
       
     } catch (error) {
       console.error('Error cambiando estado:', error);
+      sendError(res, 'Error interno del servidor');
+    }
+  }
+
+  // Actualizar oficio completo
+  static async updateOficio(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const {
+        numeroExpediente,
+        nombreSolicitante,
+        apellidoSolicitante,
+        cedulaSolicitante,
+        telefonoSolicitante,
+        emailSolicitante,
+        tipoPeritaje,
+        descripcion,
+        fechaVencimiento,
+        prioridad,
+        estado,
+        peritoId,
+        observaciones
+      } = req.body;
+
+      const authReq = req as AuthenticatedRequest;
+
+      // Verificar que el oficio existe
+      const oficioExistente = await prisma.oficio.findUnique({ where: { id } });
+      
+      if (!oficioExistente) {
+        sendNotFound(res, 'Oficio no encontrado');
+        return;
+      }
+
+      // Si se está asignando un perito, verificar que existe y está disponible
+      if (peritoId && peritoId !== oficioExistente.peritoId) {
+        const perito = await prisma.perito.findUnique({ where: { id: peritoId } });
+        if (!perito) {
+          sendNotFound(res, 'Perito no encontrado');
+          return;
+        }
+        if (!perito.disponible) {
+          sendValidationError(res, 'El perito seleccionado no está disponible');
+          return;
+        }
+      }
+
+      // Preparar datos de actualización
+      const dataToUpdate: any = {
+        numeroExpediente,
+        nombreSolicitante,
+        apellidoSolicitante,
+        cedulaSolicitante,
+        telefonoSolicitante,
+        emailSolicitante,
+        tipoPeritaje,
+        descripcion,
+        prioridad,
+        estado,
+        observaciones
+      };
+
+      // Convertir fechaVencimiento a Date si existe
+      if (fechaVencimiento) {
+        dataToUpdate.fechaVencimiento = new Date(fechaVencimiento);
+      }
+
+      // Actualizar peritoId si se proporcionó
+      if (peritoId !== undefined) {
+        dataToUpdate.peritoId = peritoId || null;
+        
+        // Si se asigna por primera vez, actualizar fechaAsignacion
+        if (peritoId && !oficioExistente.peritoId) {
+          dataToUpdate.fechaAsignacion = new Date();
+        }
+      }
+
+      // Actualizar el oficio
+      const oficioActualizado = await prisma.oficio.update({
+        where: { id },
+        data: dataToUpdate,
+        include: {
+          perito: true,
+          creadoPor: {
+            select: {
+              id: true,
+              nombre: true,
+              apellido: true,
+              email: true
+            }
+          }
+        }
+      });
+
+      // Crear registro en historial
+      const cambios: string[] = [];
+      if (estado !== oficioExistente.estado) cambios.push(`estado: ${oficioExistente.estado} → ${estado}`);
+      if (prioridad !== oficioExistente.prioridad) cambios.push(`prioridad: ${oficioExistente.prioridad} → ${prioridad}`);
+      if (peritoId && peritoId !== oficioExistente.peritoId) cambios.push('perito asignado');
+
+      if (cambios.length > 0) {
+        await prisma.historialOficio.create({
+          data: {
+            accion: 'ACTUALIZADO',
+            descripcion: `Oficio actualizado: ${cambios.join(', ')}`,
+            oficioId: id,
+            realizadoPor: authReq.user?.userId || ''
+          }
+        });
+      }
+
+      sendSuccess(res, oficioActualizado, 'Oficio actualizado exitosamente');
+      
+    } catch (error) {
+      console.error('Error actualizando oficio:', error);
       sendError(res, 'Error interno del servidor');
     }
   }

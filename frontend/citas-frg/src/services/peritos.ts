@@ -1,4 +1,4 @@
-import { ApiResponse, Perito, PaginatedResponse } from '@/app/types'
+import { ApiResponse, Perito, PaginatedResponse, Oficio } from '@/app/types'
 import { apiService } from './api'
 
 interface PeritosFilter {
@@ -71,17 +71,19 @@ class PeritosService {
     estado?: string
     fechaDesde?: string
     fechaHasta?: string
-  }): Promise<ApiResponse<any[]>> {
+  }): Promise<ApiResponse<Oficio[]>> {
     const queryParams = new URLSearchParams()
     
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {
-        if (value) queryParams.append(key, value)
+        if (value !== undefined && value !== null && value !== '') {
+          queryParams.append(key, String(value))
+        }
       })
     }
 
     const endpoint = `/peritos/${peritoId}/casos${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
-    return apiService.get(endpoint)
+    return apiService.get<Oficio[]>(endpoint)
   }
 
   // Obtener estadísticas de un perito

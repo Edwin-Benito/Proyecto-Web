@@ -1,0 +1,335 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// MODELO DE USUARIOS
+// ============================================
+model Usuario {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String // Hash bcrypt
+  nombre    String
+  apellido  String
+  rol       Rol      @default(COORDINADOR)
+  activo    Boolean  @default(true)
+  
+  // Relaciones
+  oficiosCreados    Oficio[]    @relation("OficiosCreados")
+  comentarios       Comentario[]
+  auditLogs         AuditLog[]
+  notificaciones    Notificacion[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("usuarios")
+}
+
+enum Rol {
+  ADMINISTRADOR
+  COORDINADOR
+  PERITO
+}
+
+// ============================================
+// MODELO DE PERITOS
+// ============================================
+model Perito {
+  id              String    @id @default(uuid())
+  nombre          String
+  apellido        String
+  cedula          String    @unique
+  especialidad    String    // Especialidades separadas por comas
+  telefono        String
+  email           String    @unique
+  activo          Boolean   @default(true)
+  disponible      Boolean   @default(true)
+  
+  // Relaciones
+  oficiosAsignados Oficio[]
+  citas            Cita[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("peritos")
+}
+
+// ============================================
+// MODELO DE OFICIOS
+// ============================================
+model Oficio {
+  id                    String        @id @default(uuid())
+  numeroExpediente      String        @unique
+  nombreSolicitante     String
+  apellidoSolicitante   String
+  cedulaSolicitante     String
+  telefonoSolicitante   String?
+  emailSolicitante      String?
+  
+  tipoPeritaje          String
+  descripcion           String
+  
+  fechaIngreso          DateTime      @default(now())
+  fechaAsignacion       DateTime?
+  fechaCita             DateTime?
+  fechaVencimiento      DateTime
+  
+  estado                EstadoOficio  @default(PENDIENTE)
+  prioridad             Prioridad     @default(MEDIA)
+  
+  observaciones         String?
+  
+  // Relaciones
+  peritoId              String?
+  perito                Perito?       @relation(fields: [peritoId], references: [id], onDelete: SetNull)
+  
+  creadoPorId           String
+  creadoPor             Usuario       @relation("OficiosCreados", fields: [creadoPorId], references: [id])
+  
+  documentos            Documento[]
+  comentarios           Comentario[]
+  citas                 Cita[]
+  historial             HistorialOficio[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([estado])
+  @@index([prioridad])
+  @@index([peritoId])
+  @@index([fechaVencimiento])
+  @@map("oficios")
+}
+
+enum EstadoOficio {
+  PENDIENTE
+  ASIGNADO
+  EN_PROCESO
+  REVISION
+  COMPLETADO
+  RECHAZADO
+  VENCIDO
+}
+
+enum Prioridad {
+  BAJA
+  MEDIA
+  ALTA
+  URGENTE
+}
+
+// ============================================
+// MODELO DE DOCUMENTOS
+// ============================================
+model Documento {
+  id          String   @id @default(uuid())
+  nombre      String
+  nombreOriginal String
+  tipo        String   // MIME type
+  url         String   // Ruta del archivo
+  tamano      Int      // Bytes (tamaño)
+  version     Int      @default(1)
+  
+  // Relación con Oficio
+  oficioId    String
+  oficio      Oficio   @relation(fields: [oficioId], references: [id], onDelete: Cascade)
+  
+  // Metadata
+  subidoPorId String
+  fechaSubida DateTime @default(now())
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([oficioId])
+  @@map("documentos")
+}
+
+// ============================================
+// MODELO DE COMENTARIOS
+// ============================================
+model Comentario {
+  id        String   @id @default(uuid())
+  texto     String
+  
+  // Relaciones
+  oficioId  String
+  oficio    Oficio   @relation(fields: [oficioId], references: [id], onDelete: Cascade)
+  
+  autorId   String
+  autor     Usuario  @relation(fields: [autorId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([oficioId])
+  @@map("comentarios")
+}
+
+// ============================================
+// MODELO DE CITAS
+// ============================================
+model Cita {
+  id          String       @id @default(uuid())
+  titulo      String
+  descripcion String?
+  fechaInicio DateTime
+  fechaFin    DateTime
+  ubicacion   String?
+  tipo        TipoCita     @default(EVALUACION)
+  estado      EstadoCita   @default(PROGRAMADA)
+  
+  // Relaciones
+  oficioId    String
+  oficio      Oficio       @relation(fields: [oficioId], references: [id], onDelete: Cascade)
+  
+  peritoId    String
+  perito      Perito       @relation(fields: [peritoId], references: [id])
+  
+  // Recordatorios
+  recordatorio24h Boolean  @default(true)
+  recordatorio1h  Boolean  @default(true)
+  notificado24h   Boolean  @default(false)
+  notificado1h    Boolean  @default(false)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([oficioId])
+  @@index([peritoId])
+  @@index([fechaInicio])
+  @@map("citas")
+}
+
+enum TipoCita {
+  EVALUACION
+  AUDIENCIA
+  ENTREGA_INFORME
+  SEGUIMIENTO
+  OTRA
+}
+
+enum EstadoCita {
+  PROGRAMADA
+  CONFIRMADA
+  REALIZADA
+  CANCELADA
+  REPROGRAMADA
+}
+
+// ============================================
+// MODELO DE HISTORIAL DE CAMBIOS
+// ============================================
+model HistorialOficio {
+  id          String   @id @default(uuid())
+  accion      AccionHistorial
+  descripcion String
+  
+  // Datos antes/después (JSON)
+  estadoAnterior Json?
+  estadoNuevo    Json?
+  
+  // Relaciones
+  oficioId    String
+  oficio      Oficio   @relation(fields: [oficioId], references: [id], onDelete: Cascade)
+  
+  realizadoPor String
+  
+  createdAt DateTime @default(now())
+
+  @@index([oficioId])
+  @@index([createdAt])
+  @@map("historial_oficios")
+}
+
+enum AccionHistorial {
+  CREADO
+  ASIGNADO
+  REASIGNADO
+  CAMBIO_ESTADO
+  CAMBIO_PRIORIDAD
+  DOCUMENTO_AGREGADO
+  DOCUMENTO_ELIMINADO
+  COMENTARIO_AGREGADO
+  CITA_CREADA
+  CITA_MODIFICADA
+  ACTUALIZADO
+}
+
+// ============================================
+// MODELO DE AUDITORÍA (LOGS DE SISTEMA)
+// ============================================
+model AuditLog {
+  id          String   @id @default(uuid())
+  accion      String   // CREATE, UPDATE, DELETE, LOGIN, LOGOUT, EXPORT, etc.
+  recurso     String   // oficio, perito, usuario, etc.
+  resourceId  String?  // ID del recurso afectado
+  descripcion String
+  
+  // Metadata del cambio
+  detalles    Json?    // Datos completos del cambio
+  
+  // Usuario que realizó la acción
+  usuarioId   String?
+  usuario     Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  
+  // Información de red
+  ip          String?
+  userAgent   String?
+  
+  createdAt DateTime @default(now())
+
+  @@index([accion])
+  @@index([recurso])
+  @@index([usuarioId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// ============================================
+// MODELO DE NOTIFICACIONES
+// ============================================
+model Notificacion {
+  id       String             @id @default(uuid())
+  tipo     TipoNotificacion
+  titulo   String
+  mensaje  String
+  leida    Boolean            @default(false)
+  
+  // Relaciones
+  usuarioId String
+  usuario   Usuario           @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  
+  // Metadata
+  metadata  Json?             // Datos adicionales (oficioId, citaId, etc.)
+  
+  createdAt DateTime @default(now())
+  leidaAt   DateTime?
+
+  @@index([usuarioId])
+  @@index([leida])
+  @@index([createdAt])
+  @@map("notificaciones")
+}
+
+enum TipoNotificacion {
+  OFICIO_ASIGNADO
+  OFICIO_VENCIENDO
+  OFICIO_VENCIDO
+  CITA_PROGRAMADA
+  CITA_PROXIMO
+  COMENTARIO_NUEVO
+  ESTADO_CAMBIADO
+  DOCUMENTO_NUEVO
+  SISTEMA
+}
