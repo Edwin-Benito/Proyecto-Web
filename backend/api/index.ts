@@ -84,5 +84,5 @@ app.get('/health', (req: express.Request, res: express.Response) => {
 // Middleware de manejo de errores (debe ir al final)
 app.use(errorHandler);
 
-// Exportar para Vercel Serverless
+// Exportar para Vercel Serverless Functions
 export default app;
