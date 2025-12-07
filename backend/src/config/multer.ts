@@ -1,11 +1,23 @@
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 
-// Crear directorio de uploads si no existe
-const uploadDir = path.join(__dirname, '../../uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
+// En Vercel (serverless), usar /tmp como directorio temporal
+// En desarrollo local, usar ./uploads
+const uploadDir = process.env.VERCEL 
+  ? path.join(os.tmpdir(), 'uploads')
+  : path.join(__dirname, '../../uploads');
+
+// Crear directorio de uploads si no existe (solo en desarrollo)
+if (!process.env.VERCEL) {
+  try {
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+  } catch (error) {
+    console.warn('No se pudo crear directorio de uploads:', error);
+  }
 }
 
 // Configurar almacenamiento
