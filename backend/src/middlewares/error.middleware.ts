@@ -1,12 +1,12 @@
-import { Request, Response, NextFunction } from 'express';
+import express from 'express';
 import { ApiResponse } from '../types';
 
 // Middleware para manejar errores globalmente
 export const errorHandler = (
   error: Error,
-  req: Request,
-  res: Response,
-  next: NextFunction
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
 ): void => {
   console.error('Error capturado:', error);
 
@@ -47,7 +47,7 @@ export const errorHandler = (
 };
 
 // Middleware para manejar rutas no encontradas
-export const notFoundHandler = (req: Request, res: Response): void => {
+export const notFoundHandler = (req: express.Request, res: express.Response): void => {
   res.status(404).json({
     success: false,
     message: `Ruta ${req.method} ${req.path} no encontrada`
@@ -55,7 +55,7 @@ export const notFoundHandler = (req: Request, res: Response): void => {
 };
 
 // Middleware para logging de requests
-export const requestLogger = (req: Request, res: Response, next: NextFunction): void => {
+export const requestLogger = (req: express.Request, res: express.Response, next: express.NextFunction): void => {
   const timestamp = new Date().toISOString();
   console.log(`[${timestamp}] ${req.method} ${req.path} - ${req.ip}`);
   next();
