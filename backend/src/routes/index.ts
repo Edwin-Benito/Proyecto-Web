@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { authRoutes } from './auth.routes';
 import { oficiosRoutes } from './oficios.routes';
 import { peritosRoutes } from './peritos.routes';
-import { documentosRoutes } from './documentos.routes';
+// import { documentosRoutes } from './documentos.routes'; // Temporalmente deshabilitado para Vercel
 import { citasRoutes } from './citas.routes';
 import statsRoutes from './stats.routes';
 
@@ -12,7 +12,7 @@ const router = Router();
 router.use('/auth', authRoutes);
 router.use('/oficios', oficiosRoutes);
 router.use('/peritos', peritosRoutes);
-router.use('/documentos', documentosRoutes);
+// router.use('/documentos', documentosRoutes); // Temporalmente deshabilitado para Vercel
 router.use('/citas', citasRoutes);
 router.use('/stats', statsRoutes);
 
