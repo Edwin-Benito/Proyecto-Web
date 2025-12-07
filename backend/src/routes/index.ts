@@ -17,6 +17,7 @@ router.use('/citas', citasRoutes);
 router.use('/stats', statsRoutes);
 
 // Ruta de salud del API
+// @ts-ignore
 router.get('/health', (req, res) => {
   res.json({
     success: true,
