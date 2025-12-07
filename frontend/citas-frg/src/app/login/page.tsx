@@ -77,9 +77,10 @@ export default function LoginPage() {
       // Usar el servicio de autenticación del contexto
       await login(formData.email, formData.password);
       // La redirección se maneja en el contexto
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error)
       setErrors({
-        general: error?.message || 'Error de autenticación. Por favor, verifica tus credenciales.'
+        general: message || 'Error de autenticación. Por favor, verifica tus credenciales.'
       });
     } finally {
       setIsLoading(false);

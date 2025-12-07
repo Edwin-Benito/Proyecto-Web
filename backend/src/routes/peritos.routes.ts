@@ -10,28 +10,45 @@ const router = Router();
 const createPeritoValidation = [
   body('nombre')
     .isLength({ min: 2 })
-    .withMessage('El nombre debe tener al menos 2 caracteres'),
+    .withMessage('El nombre debe tener al menos 2 caracteres')
+    .trim()
+    .escape(),
+  body('apellido')
+    .isLength({ min: 2 })
+    .withMessage('El apellido debe tener al menos 2 caracteres')
+    .trim()
+    .escape(),
+  body('cedula')
+    .notEmpty()
+    .withMessage('La cédula es requerida')
+    .trim()
+    .escape(),
   body('especialidad')
     .notEmpty()
-    .withMessage('La especialidad es requerida'),
+    .withMessage('La especialidad es requerida')
+    .trim()
+    .escape(),
   body('telefono')
-    .optional()
-    .isMobilePhone('es-MX')
-    .withMessage('El teléfono debe ser un número válido'),
+    .notEmpty()
+    .withMessage('El teléfono es requerido')
+    .trim(),
   body('email')
-    .optional()
     .isEmail()
-    .withMessage('Debe proporcionar un email válido'),
+    .withMessage('Debe proporcionar un email válido')
+    .normalizeEmail(),
   validateRequest
 ];
 
 // Validaciones para actualizar perito
 const updatePeritoValidation = [
-  body('nombre').optional().isLength({ min: 2 }).withMessage('El nombre debe tener al menos 2 caracteres'),
-  body('especialidad').optional().notEmpty().withMessage('La especialidad es requerida'),
-  body('telefono').optional().isMobilePhone('es-MX').withMessage('El teléfono debe ser un número válido'),
-  body('email').optional().isEmail().withMessage('Debe proporcionar un email válido'),
+  body('nombre').optional().isLength({ min: 2 }).withMessage('El nombre debe tener al menos 2 caracteres').trim().escape(),
+  body('apellido').optional().isLength({ min: 2 }).withMessage('El apellido debe tener al menos 2 caracteres').trim().escape(),
+  body('cedula').optional().notEmpty().withMessage('La cédula no puede estar vacía').trim().escape(),
+  body('especialidad').optional().notEmpty().withMessage('La especialidad es requerida').trim().escape(),
+  body('telefono').optional().notEmpty().withMessage('El teléfono no puede estar vacío').trim(),
+  body('email').optional().isEmail().withMessage('Debe proporcionar un email válido').normalizeEmail(),
   body('disponible').optional().isBoolean().withMessage('Disponible debe ser verdadero o falso'),
+  body('activo').optional().isBoolean().withMessage('Activo debe ser verdadero o falso'),
   validateRequest
 ];
 
@@ -49,5 +66,10 @@ router.use(authMiddleware);
 
 // Rutas CRUD
 router.get('/', queryValidation, PeritosController.getPeritos);
+router.get('/:id', PeritosController.getPeritoById);
+router.post('/', createPeritoValidation, PeritosController.createPerito);
+router.put('/:id', updatePeritoValidation, PeritosController.updatePerito);
+router.patch('/:id/disponibilidad', PeritosController.toggleDisponibilidad);
+router.delete('/:id', PeritosController.deletePerito);
 
 export { router as peritosRoutes };

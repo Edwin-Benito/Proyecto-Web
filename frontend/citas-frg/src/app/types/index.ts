@@ -4,7 +4,7 @@ export interface User {
   email: string
   nombre: string
   apellido: string
-  rol: 'administrador' | 'coordinador' | 'perito'
+  rol: 'ADMINISTRADOR' | 'COORDINADOR' | 'PERITO'
   avatar?: string
   activo: boolean
   createdAt: string
@@ -28,11 +28,10 @@ export interface Perito {
   nombre: string
   apellido: string
   cedula: string
-  especialidad: string[]
+  especialidad: string // En backend es string separado por comas
   telefono: string
   email: string
   activo: boolean
-  casosAsignados: number
   disponible: boolean
   createdAt: string
   updatedAt: string
@@ -53,11 +52,13 @@ export interface Oficio {
   fechaAsignacion?: string
   fechaCita?: string
   fechaVencimiento: string
-  estado: 'pendiente' | 'asignado' | 'en_proceso' | 'completado' | 'vencido'
-  prioridad: 'baja' | 'media' | 'alta' | 'urgente'
-  peritoAsignado?: Perito
+  estado: 'PENDIENTE' | 'ASIGNADO' | 'EN_PROCESO' | 'REVISION' | 'COMPLETADO' | 'RECHAZADO' | 'VENCIDO'
+  prioridad: 'BAJA' | 'MEDIA' | 'ALTA' | 'URGENTE'
+  perito?: Perito // Relación con perito
   peritoId?: string
-  documentos: Documento[]
+  creadoPor?: User // Relación con usuario creador
+  creadoPorId: string
+  documentos?: Documento[]
   observaciones?: string
   createdAt: string
   updatedAt: string
@@ -67,22 +68,30 @@ export interface Oficio {
 export interface Documento {
   id: string
   nombre: string
+  nombreOriginal: string
   tipo: string
   url: string
-  tamaño: number
+  tamano: number // Backend usa 'tamano' sin ñ
+  version: number
   fechaSubida: string
   oficioId: string
+  subidoPorId: string
+  createdAt: string
+  updatedAt: string
 }
 
 // Tipos para citas
 export interface Cita {
   id: string
+  titulo: string
+  descripcion?: string
+  fechaInicio: string
+  fechaFin: string
+  ubicacion?: string
+  tipo: 'EVALUACION' | 'SEGUIMIENTO' | 'ENTREGA_INFORME' | 'OTRO'
+  estado: 'PROGRAMADA' | 'CONFIRMADA' | 'REALIZADA' | 'CANCELADA' | 'REPROGRAMADA'
   oficioId: string
   peritoId: string
-  fecha: string
-  hora: string
-  direccion: string
-  estado: 'programada' | 'confirmada' | 'realizada' | 'cancelada' | 'reprogramada'
   observaciones?: string
   createdAt: string
   updatedAt: string
@@ -115,7 +124,7 @@ export interface PaginatedResponse<T> {
 }
 
 // Tipos para respuestas de API
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean
   data?: T
   message?: string
@@ -146,4 +155,35 @@ export interface Notificacion {
   fechaCreacion: string
   userId: string
   oficioId?: string
+}
+
+// Tipos para Citas
+export interface Cita {
+  id: string
+  titulo: string
+  descripcion?: string
+  fechaInicio: string
+  fechaFin: string
+  ubicacion?: string
+  tipo: 'EVALUACION' | 'AUDIENCIA' | 'ENTREGA_INFORME' | 'SEGUIMIENTO' | 'OTRA'
+  estado: 'PROGRAMADA' | 'CONFIRMADA' | 'COMPLETADA' | 'CANCELADA' | 'REPROGRAMADA'
+  oficioId: string
+  oficio?: Oficio
+  peritoId: string
+  perito?: Perito
+  recordatorio24h: boolean
+  recordatorio1h: boolean
+  notificado24h: boolean
+  notificado1h: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CitaFilter extends PaginationParams {
+  peritoId?: string
+  oficioId?: string
+  tipo?: Cita['tipo']
+  estado?: Cita['estado']
+  fechaDesde?: string
+  fechaHasta?: string
 }

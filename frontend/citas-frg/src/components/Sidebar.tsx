@@ -1,49 +1,22 @@
 'use client'
 
-import { useState } from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 
-const menuItems = [
-  {
-    name: 'Recepción de Oficios',
-    icon: 'inbox',
-    href: '/',
-    active: true,
-  },
-  {
-    name: 'Detalle de Oficio y Asignación',
-    icon: 'assignment_ind',
-    href: '/asignacion',
-    active: false,
-  },
-  {
-    name: 'Vista del Caso para Peritos',
-    icon: 'visibility',
-    href: '/casos',
-    active: false,
-  },
-  {
-    name: 'Agendamiento de Citas',
-    icon: 'calendar_month',
-    href: '/citas',
-    active: false,
-  },
-  {
-    name: 'Gestión de Peritos',
-    icon: 'group',
-    href: '/peritos',
-    active: false,
-  },
-  {
-    name: 'Historial de Casos',
-    icon: 'history',
-    href: '/historial',
-    active: false,
-  },
+// Enlaces de navegación dinámicos
+const navLinks = [
+  { name: 'Dashboard', href: '/dashboard', icon: 'dashboard' },
+  { name: 'Recepción de Oficios', href: '/dashboard/oficios', icon: 'inbox' },
+  { name: 'Gestión de Peritos', href: '/dashboard/peritos', icon: 'group' },
+  { name: 'Agendamiento de Citas', href: '/dashboard/agenda', icon: 'calendar_month' },
+  // Placeholders de futuras secciones
+  { name: 'Historial de Casos', href: '/dashboard/historial', icon: 'history' },
 ]
 
 export function Sidebar() {
   const { user, logout } = useAuth()
+  const pathname = usePathname()
 
   return (
     <aside className="flex w-64 flex-col border-r border-gray-200 bg-white">
@@ -53,20 +26,28 @@ export function Sidebar() {
       </div>
       
       <nav className="flex flex-1 flex-col gap-2 p-4">
-        {menuItems.map((item) => (
-          <a
-            key={item.name}
-            href={item.href}
-            className={`flex items-center gap-3 rounded px-3 py-2 text-sm font-medium transition-colors ${
-              item.active
-                ? 'bg-blue-100 font-bold text-blue-600'
-                : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
-            }`}
-          >
-            <span className="material-symbols-outlined text-lg">{item.icon}</span>
-            {item.name}
-          </a>
-        ))}
+        {navLinks.map((item) => {
+          // Marcar activo: la ruta raíz '/dashboard' solo cuando sea exactamente esa ruta.
+          // Para las subsecciones, marcamos activo cuando el pathname empiece con el href.
+          const isActive =
+            item.href === '/dashboard'
+              ? pathname === '/dashboard'
+              : pathname?.startsWith(item.href)
+          return (
+            <Link
+              key={item.name}
+              href={item.href}
+              className={`flex items-center gap-3 rounded px-3 py-2 text-sm font-medium transition-colors ${
+                isActive
+                  ? 'bg-blue-100 font-bold text-blue-600'
+                  : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
+              }`}
+            >
+              <span className="material-symbols-outlined text-lg">{item.icon}</span>
+              {item.name}
+            </Link>
+          )
+        })}
       </nav>
       
       <div className="border-t border-gray-200 p-4">
