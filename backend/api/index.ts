@@ -3,8 +3,8 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import { apiRoutes } from '../src/routes/index.js';
-import { errorHandler } from '../src/middlewares/error.middleware.js';
+import { apiRoutes } from '../src/routes/index';
+import { errorHandler } from '../src/middlewares/error.middleware';
 
 const app = express();
 
@@ -27,6 +27,9 @@ app.use(helmet({
   contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false,
 }));
+
+// Handler para OPTIONS requests (preflight)
+app.options('*', cors());
 
 // Montar todas las rutas API
 app.use('/api', apiRoutes);
