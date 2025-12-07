@@ -28,9 +28,6 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false,
 }));
 
-// Handler para OPTIONS requests (preflight)
-app.options('*', cors());
-
 // Montar todas las rutas API
 app.use('/api', apiRoutes);
 
