@@ -8,69 +8,25 @@ import { errorHandler } from '../src/middlewares/error.middleware.js';
 
 const app = express();
 
-// Configurar helmet para security headers
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
-    },
-  },
-  crossOriginEmbedderPolicy: false,
-}));
-
-// Configurar rate limiting global
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // Máximo 100 requests por ventana
-  message: 'Demasiadas solicitudes desde esta IP, por favor intenta de nuevo más tarde.',
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-app.use('/api', limiter);
-
-// Rate limiting más estricto para autenticación
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5, // Máximo 5 intentos de login en 15 minutos
-  message: 'Demasiados intentos de inicio de sesión, por favor intenta más tarde.',
-  skipSuccessfulRequests: true,
-});
-app.use('/api/auth/login', authLimiter);
-
-// Configurar CORS - Permitir todos los dominios de Vercel
+// CORS DEBE IR PRIMERO - Permitir todos los dominios .vercel.app
 app.use(cors({
-  origin: function (origin, callback) {
-    // Permitir requests sin origin (como mobile apps o curl requests)
-    if (!origin) return callback(null, true);
-    
-    // Permitir todos los dominios .vercel.app
-    if (origin.endsWith('.vercel.app')) {
-      return callback(null, true);
-    }
-    
-    // Permitir localhost en desarrollo
-    if (origin.includes('localhost')) {
-      return callback(null, true);
-    }
-    
-    // Permitir el FRONTEND_URL específico
-    if (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL) {
-      return callback(null, true);
-    }
-    
-    callback(null, true); // Permitir todos en producción por ahora
-  },
+  origin: true, // Permitir todos los orígenes por ahora
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  maxAge: 600,
 }));
 
-// Middleware para parsear JSON
+// Middleware para parsear JSON - DEBE IR TEMPRANO
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Configurar helmet para security headers (DESPUÉS de CORS)
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+}));
 
 // Montar todas las rutas API
 app.use('/api', apiRoutes);
