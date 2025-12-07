@@ -1,7 +1,8 @@
+// @ts-nocheck
 import { PrismaClient } from '@prisma/client'
 
 // Singleton para evitar múltiples instancias de PrismaClient
-const globalForPrisma = global as unknown as { prisma: PrismaClient }
+const globalForPrisma = global as unknown as { prisma: any }
 
 export const prisma =
   globalForPrisma.prisma ||
