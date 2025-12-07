@@ -52,19 +52,32 @@ const authLimiter = rateLimit({
 });
 app.use('/api/auth/login', authLimiter);
 
-// Configurar CORS - Permitir todos los orígenes en producción de Vercel
+// Configurar CORS - Permitir todos los dominios de Vercel
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? [
-        process.env.FRONTEND_URL || '',
-        /\.vercel\.app$/,
-      ]
-    : [
-        'http://localhost:3000',
-        'http://localhost:3001',
-        process.env.FRONTEND_URL || 'http://localhost:3001'
-      ],
-  credentials: true
+  origin: function (origin, callback) {
+    // Permitir requests sin origin (como mobile apps o curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Permitir todos los dominios .vercel.app
+    if (origin.endsWith('.vercel.app')) {
+      return callback(null, true);
+    }
+    
+    // Permitir localhost en desarrollo
+    if (origin.includes('localhost')) {
+      return callback(null, true);
+    }
+    
+    // Permitir el FRONTEND_URL específico
+    if (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL) {
+      return callback(null, true);
+    }
+    
+    callback(null, true); // Permitir todos en producción por ahora
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 // Middleware para parsear JSON
